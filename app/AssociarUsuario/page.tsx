@@ -1,13 +1,10 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 type Funcionario = {
   nome: string;
-  cpf: string;
-  foto: string | null; // Foto como URL de string
-  setor: string;
-  turno: string;
   matricula: string;
 };
 
@@ -17,180 +14,138 @@ type Equipamento = {
 };
 
 type Associacao = {
-  nomeFuncionario: string;
-  matriculaFuncionario: string;
-  numeroSerieEquipamento: string;
-  fotoFuncionario: string | null;
+  id: string;
+  funcionarioMatricula: string;
+  equipamentoNumeroSerie: string;
+  dataAssociacao: string;
 };
 
-interface Props {
-  funcionarios: Funcionario[];
-  equipamentos: Equipamento[];
-  onAssociar: (associacao: Associacao) => void;
-  onRemoverAssociacao: (associacao: Associacao, matriculaInput: string) => void;
-}
-
-export default function AssociarEquipamento({
-  funcionarios = [],
-  equipamentos = [],
-  onAssociar,
-  onRemoverAssociacao,
-}: Props) {
-  const [nomeFuncionario, setNomeFuncionario] = useState('');
-  const [numeroSerieEquipamento, setNumeroSerieEquipamento] = useState('');
+export default function AssociacaoEquipamento() {
+  const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
+  const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
   const [associacoes, setAssociacoes] = useState<Associacao[]>([]);
-  const [matriculaInput, setMatriculaInput] = useState('');
+  const [selectedFuncionario, setSelectedFuncionario] = useState<string>('');
+  const [selectedEquipamento, setSelectedEquipamento] = useState<string>('');
+  const [matriculaParaRemover, setMatriculaParaRemover] = useState<string>('');
 
   useEffect(() => {
-    // Recuperar dados do Local Storage (se existirem)
-    const savedAssociacoes = localStorage.getItem('associacoes');
-    if (savedAssociacoes) {
-      setAssociacoes(JSON.parse(savedAssociacoes));
-    }
+    // Carregar funcionários, equipamentos e associações existentes
+    axios.get('/api/funcionarios').then(response => setFuncionarios(response.data));
+    axios.get('/api/equipamentos').then(response => setEquipamentos(response.data));
+    axios.get('/api/associacoes').then(response => setAssociacoes(response.data));
   }, []);
 
-  useEffect(() => {
-    // Salvar dados no Local Storage sempre que mudarem
-    localStorage.setItem('associacoes', JSON.stringify(associacoes));
-  }, [associacoes]);
+  const handleAssociar = async () => {
+    if (!selectedFuncionario || !selectedEquipamento) {
+      alert('Por favor, selecione um funcionário e um equipamento.');
+      return;
+    }
 
-  const handleAssociar = () => {
-    // Busca o funcionário selecionado com base no nome
-    const funcionarioSelecionado = funcionarios.find(
-      (f) => f.nome === nomeFuncionario
-    );
-
-    // Busca o equipamento selecionado com base no número de série
-    const equipamentoSelecionado = equipamentos.find(
-      (e) => e.numeroSerie === numeroSerieEquipamento
-    );
-
-    if (funcionarioSelecionado && equipamentoSelecionado) {
-      // Verifica se a associação já existe
-      const associacaoExistente = associacoes.find(
-        (assoc) =>
-          assoc.nomeFuncionario === nomeFuncionario &&
-          assoc.numeroSerieEquipamento === numeroSerieEquipamento
-      );
-
-      // Verifica se o equipamento já está associado
-      const equipamentoJaAssociado = associacoes.some(
-        (assoc) => assoc.numeroSerieEquipamento === numeroSerieEquipamento
-      );
-
-      // Verifica se o funcionário já está associado
-      const funcionarioJaAssociado = associacoes.some(
-        (assoc) => assoc.nomeFuncionario === nomeFuncionario
-      );
-
-      if (!associacaoExistente && !equipamentoJaAssociado && !funcionarioJaAssociado) {
-        const novaAssociacao: Associacao = {
-          nomeFuncionario,
-          matriculaFuncionario: funcionarioSelecionado.matricula,
-          numeroSerieEquipamento,
-          fotoFuncionario: funcionarioSelecionado.foto,
-        };
-        setAssociacoes([...associacoes, novaAssociacao]);
-        onAssociar(novaAssociacao);
-        setNomeFuncionario('');
-        setNumeroSerieEquipamento('');
-      } else {
-        alert('O funcionário já está associado a um equipamento ou o equipamento já está associado.');
-      }
-    } else {
-      alert('Funcionário ou Equipamento não encontrado.');
+    try {
+      const response = await axios.post('/api/associacoes', {
+        funcionarioMatricula: selectedFuncionario,
+        equipamentoNumeroSerie: selectedEquipamento,
+      });
+      setAssociacoes([...associacoes, response.data]);
+      setSelectedFuncionario('');
+      setSelectedEquipamento('');
+    } catch (error) {
+      console.error('Erro ao associar equipamento:', error);
+      alert('Erro ao associar equipamento. Por favor, tente novamente.');
     }
   };
 
-  const handleRemoverAssociacao = (associacao: Associacao) => {
-    if (associacao.matriculaFuncionario === matriculaInput) {
-      const novasAssociacoes = associacoes.filter(
-        (assoc) =>
-          assoc.nomeFuncionario !== associacao.nomeFuncionario ||
-          assoc.numeroSerieEquipamento !== associacao.numeroSerieEquipamento
-      );
-      setAssociacoes(novasAssociacoes);
-      onRemoverAssociacao(associacao, matriculaInput);
-    } else {
-      alert('Matrícula incorreta.');
+  const handleRemover = async () => {
+    if (!matriculaParaRemover) {
+      alert('Por favor, insira a matrícula do funcionário.');
+      return;
+    }
+
+    try {
+      await axios.delete('/api/associacoes', { data: { matricula: matriculaParaRemover } });
+      setAssociacoes(associacoes.filter(a => a.funcionarioMatricula !== matriculaParaRemover));
+      setMatriculaParaRemover('');
+    } catch (error) {
+      console.error('Erro ao remover associação:', error);
+      alert('Erro ao remover associação. Por favor, tente novamente.');
     }
   };
 
   return (
-    <div className="p-8">
-      <h2 className="text-xl font-semibold mb-4">Associar Equipamento</h2>
-      <div className="space-y-4">
-        <div>
-          <label className="block">Nome do Funcionário:</label>
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <h2 className="text-3xl font-bold mb-6 text-center">Associação de Equipamentos</h2>
+
+      {/* Associar Equipamento */}
+      <div className="mb-6 bg-white shadow-md rounded-lg p-4">
+        <h3 className="text-2xl font-semibold mb-4">Associar Equipamento</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
           <select
-            value={nomeFuncionario}
-            onChange={(e) => setNomeFuncionario(e.target.value)}
-            className="w-full p-2 border rounded"
+            value={selectedFuncionario}
+            onChange={(e) => setSelectedFuncionario(e.target.value)}
+            className="p-2 border border-gray-300 rounded-md w-full sm:w-1/2"
           >
-            <option value="">Selecione o Funcionário</option>
-            {funcionarios.map((funcionario, index) => (
-              <option key={index} value={funcionario.nome}>
-                {funcionario.nome}
-              </option>
+            <option value="">Funcionário</option>
+            {funcionarios.map((f) => (
+              <option key={f.matricula} value={f.matricula}>{f.nome}</option>
             ))}
           </select>
-        </div>
-
-        <div>
-          <label className="block">Número de Série do Equipamento:</label>
           <select
-            value={numeroSerieEquipamento}
-            onChange={(e) => setNumeroSerieEquipamento(e.target.value)}
-            className="w-full p-2 border rounded"
+            value={selectedEquipamento}
+            onChange={(e) => setSelectedEquipamento(e.target.value)}
+            className="p-2 border border-gray-300 rounded-md w-full sm:w-1/2"
           >
-            <option value="">Selecione o Equipamento</option>
-            {equipamentos.map((equipamento, index) => (
-              <option key={index} value={equipamento.numeroSerie}>
-                {equipamento.numeroSerie}
-              </option>
+            <option value="">Selecione um equipamento</option>
+            {equipamentos.map((e) => (
+              <option key={e.numeroSerie} value={e.numeroSerie}>{e.nome} (Nº Série: {e.numeroSerie})</option>
             ))}
           </select>
+          <button
+            onClick={handleAssociar}
+            className="px-4 py-2 bg-green-700 text-white rounded hover:bg-green-600 transition"
+          >
+            Associar
+          </button>
         </div>
-
-        <button onClick={handleAssociar} className="px-4 py-2 bg-green-700 text-white rounded">
-          Associar
-        </button>
       </div>
 
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold">Associações</h3>
-        <ul>
-          {associacoes.map((associacao, index) => (
-            <li key={index} className="border p-2 mt-2 rounded flex items-center space-x-4">
-              {associacao.fotoFuncionario && (
-                <img
-                  src={associacao.fotoFuncionario}
-                  alt={associacao.nomeFuncionario}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              )}
-              <span>
-                {associacao.nomeFuncionario} - {associacao.numeroSerieEquipamento}
-              </span>
-              <button
-                onClick={() => handleRemoverAssociacao(associacao)}
-                className="ml-auto px-4 py-2 bg-red-600 text-white rounded"
-              >
-                Remover
-              </button>
+      {/* Remover Associação */}
+      <div className="mb-6 bg-white shadow-md rounded-lg p-4">
+        <h3 className="text-2xl font-semibold mb-4">Remover Associação</h3>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <input
+            type="text"
+            value={matriculaParaRemover}
+            onChange={(e) => setMatriculaParaRemover(e.target.value)}
+            placeholder="Matrícula do funcionário"
+            className="p-2 border border-gray-300 rounded-md w-full sm:w-2/3"
+          />
+          <button
+            onClick={handleRemover}
+            className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-500 transition"
+          >
+            Remover
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de Associações Atuais */}
+      <div className="bg-white shadow-md rounded-lg p-4">
+        <h3 className="text-2xl font-semibold mb-4">Associações Atuais</h3>
+        <ul className="divide-y divide-gray-200">
+          {associacoes.map((a) => (
+            <li key={a.id} className="py-4">
+              <p>
+                <strong>Funcionário:</strong> {funcionarios.find(f => f.matricula === a.funcionarioMatricula)?.nome} 
+                (Matrícula: {a.funcionarioMatricula})
+              </p>
+              <p>
+                <strong>Equipamento:</strong> {equipamentos.find(e => e.numeroSerie === a.equipamentoNumeroSerie)?.nome} 
+                (Nº Série: {a.equipamentoNumeroSerie})
+              </p>
+              <p><strong>Data de Associação:</strong> {new Date(a.dataAssociacao).toLocaleDateString()}</p>
             </li>
           ))}
         </ul>
-      </div>
-
-      <div className="mt-4">
-        <input
-          type="text"
-          placeholder="Digite sua matrícula para remover associação"
-          value={matriculaInput}
-          onChange={(e) => setMatriculaInput(e.target.value)}
-          className="w-full p-2 border rounded"
-        />
       </div>
     </div>
   );

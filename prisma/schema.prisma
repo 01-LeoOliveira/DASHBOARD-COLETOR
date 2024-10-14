@@ -1,0 +1,33 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Funcionario {
+  matricula   String       @id
+  nome        String
+  setor       String
+  turno       String
+  associacoes Associacao[]
+}
+
+model Equipamento {
+  numeroSerie String       @id
+  nome        String
+  associacoes Associacao[]
+}
+
+model Associacao {
+  id                     String      @id @default(uuid())
+  funcionario            Funcionario @relation(fields: [funcionarioMatricula], references: [matricula])
+  funcionarioMatricula   String
+  equipamento            Equipamento @relation(fields: [equipamentoNumeroSerie], references: [numeroSerie])
+  equipamentoNumeroSerie String
+  dataAssociacao         DateTime    @default(now())
+
+  @@unique([funcionarioMatricula, equipamentoNumeroSerie])
+}

@@ -1,11 +1,20 @@
-const { Pool } = require('pg'); // Ou use o pacote apropriado para o seu banco de dados
-
-const pool = new Pool({
-  user: 'root',
+// Importando o pacote mysql
+const mysql = require('mysql');
+// Configuração da conexão com o banco de dados
+const connection = mysql.createConnection({
   host: 'localhost',
-  database: 'controledecoletor',
+  user: 'root',
   password: '',
-  port: 3306, // ou a porta do seu banco de dados
+  database: 'controledecoletor'
 });
 
-module.exports = pool;
+// Conectando ao banco de dados
+connection.connect((err) => {
+  if (err) {
+    console.error('Erro ao conectar: ' + err.stack);
+    return;
+  }
+  console.log('Conexão bem-sucedida como ID ' + connection.threadId);
+});
+
+module.exports = connection;
