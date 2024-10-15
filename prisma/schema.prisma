@@ -13,12 +13,14 @@ model Funcionario {
   setor       String
   turno       String
   associacoes Associacao[]
+  historico   Historico[]  // Relacionamento com Histórico
 }
 
 model Equipamento {
   numeroSerie String       @id
   nome        String
   associacoes Associacao[]
+  historico   Historico[]  // Relacionamento com Histórico
 }
 
 model Associacao {
@@ -30,4 +32,16 @@ model Associacao {
   dataAssociacao         DateTime    @default(now())
 
   @@unique([funcionarioMatricula, equipamentoNumeroSerie])
+}
+
+model Historico {
+  id                     Int         @id @default(autoincrement())
+  acao                   String
+  dataAcao               DateTime    @default(now())
+  funcionario            Funcionario @relation(fields: [funcionarioMatricula], references: [matricula])
+  funcionarioMatricula   String
+  equipamento            Equipamento @relation(fields: [equipamentoNumeroSerie], references: [numeroSerie])
+  equipamentoNumeroSerie String
+
+  // Você pode adicionar mais campos conforme necessário
 }

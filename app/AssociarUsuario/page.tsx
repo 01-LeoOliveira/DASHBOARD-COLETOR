@@ -165,7 +165,7 @@ export default function AssociacaoEquipamento() {
             <li key={a.id} className="py-4">
               <p>
                 <strong>Funcionário:</strong> {funcionarios.find(f => f.matricula === a.funcionarioMatricula)?.nome} 
-                (Matrícula: {a.funcionarioMatricula})
+                {/*(Matrícula: {a.funcionarioMatricula})*/}
               </p>
               <p>
                 <strong>Equipamento:</strong> {equipamentos.find(e => e.numeroSerie === a.equipamentoNumeroSerie)?.nome} 
