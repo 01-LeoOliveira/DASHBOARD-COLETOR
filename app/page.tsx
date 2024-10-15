@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import axios from "axios";
+import Image from 'next/image';
 
 type Funcionario = {
   nome: string;
@@ -135,7 +136,17 @@ export default function Admin() {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+    <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      {/* Logo da empresa */}
+      <div className="mt-8 mb-4">
+        <Image
+          src="/image/GrupoSC.png"  // Substitua pela URL real da sua logo
+          alt="Logo da Empresa"
+          width={200}
+          height={100}
+        />
+      </div>
+
       <div className="p-8 bg-white shadow-lg rounded-lg w-full max-w-2xl">
         <h1 className="text-2xl font-bold mb-4 text-center">Administrador</h1>
 

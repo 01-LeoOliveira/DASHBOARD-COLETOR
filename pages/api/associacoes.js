@@ -35,6 +35,23 @@ async function handleGet(req, res) {
 async function handlePost(req, res) {
   const { funcionarioMatricula, equipamentoNumeroSerie } = req.body
   try {
+    // Verifica se o funcionário já tem um equipamento associado
+    const funcionarioAssociacao = await prisma.associacao.findFirst({
+      where: { funcionarioMatricula },
+    })
+    if (funcionarioAssociacao) {
+      return res.status(400).json({ error: 'Funcionário já possui um equipamento associado' })
+    }
+
+    // Verifica se o equipamento já está associado a outro funcionário
+    const equipamentoAssociacao = await prisma.associacao.findFirst({
+      where: { equipamentoNumeroSerie },
+    })
+    if (equipamentoAssociacao) {
+      return res.status(400).json({ error: 'Equipamento já está associado a outro funcionário' })
+    }
+
+    // Cria a nova associação
     const novaAssociacao = await prisma.associacao.create({
       data: {
         funcionarioMatricula,
@@ -64,4 +81,32 @@ async function handleDelete(req, res) {
   } catch (error) {
     res.status(400).json({ error: 'Erro ao remover associações' })
   }
+}
+
+// Nova função para obter equipamentos disponíveis
+export async function getEquipamentosDisponiveis() {
+  const associacoes = await prisma.associacao.findMany({
+    select: { equipamentoNumeroSerie: true },
+  })
+  const equipamentosAssociados = associacoes.map(a => a.equipamentoNumeroSerie)
+  
+  return prisma.equipamento.findMany({
+    where: {
+      numeroSerie: { notIn: equipamentosAssociados },
+    },
+  })
+}
+
+// Nova função para obter funcionários sem equipamentos
+export async function getFuncionariosSemEquipamentos() {
+  const associacoes = await prisma.associacao.findMany({
+    select: { funcionarioMatricula: true },
+  })
+  const funcionariosComEquipamento = associacoes.map(a => a.funcionarioMatricula)
+  
+  return prisma.funcionario.findMany({
+    where: {
+      matricula: { notIn: funcionariosComEquipamento },
+    },
+  })
 }

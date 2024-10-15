@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import Image from 'next/image';
 
 type Funcionario = {
   nome: string;
@@ -35,9 +36,25 @@ export default function AssociacaoEquipamento() {
     axios.get('/api/associacoes').then(response => setAssociacoes(response.data));
   }, []);
 
+  // Função para obter equipamentos disponíveis
+  const getEquipamentosDisponiveis = () => {
+    const equipamentosAssociados = associacoes.map(a => a.equipamentoNumeroSerie);
+    return equipamentos.filter(e => !equipamentosAssociados.includes(e.numeroSerie));
+  };
+
+  // Função para verificar se um funcionário já tem um equipamento associado
+  const funcionarioTemEquipamento = (matricula: string) => {
+    return associacoes.some(a => a.funcionarioMatricula === matricula);
+  };
+
   const handleAssociar = async () => {
     if (!selectedFuncionario || !selectedEquipamento) {
       alert('Por favor, selecione um funcionário e um equipamento.');
+      return;
+    }
+
+    if (funcionarioTemEquipamento(selectedFuncionario)) {
+      alert('Este funcionário já possui um equipamento associado.');
       return;
     }
 
@@ -73,6 +90,15 @@ export default function AssociacaoEquipamento() {
 
   return (
     <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+      <div className="flex justify-center mb-6">
+        <Image
+          src="/image/GrupoSC.png"  // Substitua pela URL real da sua logo
+          alt="Logo da Empresa"
+          width={200}
+          height={100}
+        />
+      </div>
+
       <h2 className="text-3xl font-bold mb-6 text-center">Associação de Equipamentos</h2>
 
       {/* Associar Equipamento */}
@@ -85,9 +111,12 @@ export default function AssociacaoEquipamento() {
             className="p-2 border border-gray-300 rounded-md w-full sm:w-1/2"
           >
             <option value="">Funcionário</option>
-            {funcionarios.map((f) => (
-              <option key={f.matricula} value={f.matricula}>{f.nome}</option>
-            ))}
+            {funcionarios
+              .filter(f => !funcionarioTemEquipamento(f.matricula))
+              .map((f) => (
+                <option key={f.matricula} value={f.matricula}>{f.nome}</option>
+              ))
+            }
           </select>
           <select
             value={selectedEquipamento}
@@ -95,7 +124,7 @@ export default function AssociacaoEquipamento() {
             className="p-2 border border-gray-300 rounded-md w-full sm:w-1/2"
           >
             <option value="">Selecione um equipamento</option>
-            {equipamentos.map((e) => (
+            {getEquipamentosDisponiveis().map((e) => (
               <option key={e.numeroSerie} value={e.numeroSerie}>{e.nome} (Nº Série: {e.numeroSerie})</option>
             ))}
           </select>
