@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 type Funcionario = {
   nome: string;
@@ -22,6 +23,7 @@ type Associacao = {
 };
 
 export default function AssociacaoEquipamento() {
+  const router = useRouter();
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
   const [associacoes, setAssociacoes] = useState<Associacao[]>([]);
@@ -88,17 +90,31 @@ export default function AssociacaoEquipamento() {
     }
   };
 
+  const handleLoginClick = () => {
+    router.push('/');
+  };
+
   return (
-    <div className="p-4 sm:p-8 max-w-4xl mx-auto">
+    <div className="p-4 sm:p-8 max-w-4xl mx-auto relative">
+      {/* Botão de Login */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={handleLoginClick}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-500 transition"
+        >
+          Login Administrador
+        </button>
+      </div>
+
+      {/* Logo centralizada */}
       <div className="flex justify-center mb-6">
         <Image
-          src="/image/GrupoSC.png"  // Substitua pela URL real da sua logo
+          src="/image/GrupoSC.png"
           alt="Logo da Empresa"
           width={200}
           height={100}
         />
       </div>
-
       <h2 className="text-3xl font-bold mb-6 text-center">Associação de Equipamentos</h2>
 
       {/* Associar Equipamento */}
