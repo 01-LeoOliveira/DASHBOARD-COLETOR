@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 
 type Funcionario = {
   nome: string;
@@ -17,6 +18,7 @@ type Equipamento = {
 };
 
 export default function Admin() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'funcionarios' | 'equipamentos'>('funcionarios');
   const [funcionarios, setFuncionarios] = useState<Funcionario[]>([]);
   const [equipamentos, setEquipamentos] = useState<Equipamento[]>([]);
@@ -137,10 +139,20 @@ export default function Admin() {
 
   return (
     <div className="flex flex-col items-center min-h-screen bg-gray-100">
+      {/* Botão para ir à área do usuário */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={() => router.push('/AssociarUsuario')}
+          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+        >
+          Área do Usuário
+        </button>
+      </div>
+
       {/* Logo da empresa */}
       <div className="mt-8 mb-4">
         <Image
-          src="/image/GrupoSC.png"  // Substitua pela URL real da sua logo
+          src="/image/GrupoSC.png"
           alt="Logo da Empresa"
           width={200}
           height={100}
