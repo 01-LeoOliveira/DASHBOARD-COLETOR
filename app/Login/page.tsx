@@ -3,27 +3,23 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { createToken, setToken } from './utils/auth';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const router = useRouter();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const adminUser = process.env.NEXT_PUBLIC_ADMIN_USER;
-    const adminPassword = process.env.NEXT_PUBLIC_ADMIN_PASSWORD;
-
-    if (username === adminUser && password === adminPassword) {
-      const token = createToken({ username }); // Agora passamos um objeto
-      setToken(token);
-      router.push('/admin');
+    // Aqui você deve implementar a lógica de autenticação real
+    // Por enquanto, vamos usar uma verificação simples
+    if (username === 'admin' && password === '@dm!n!23') {
+      router.push('/');
     } else {
       alert('Credenciais inválidas');
     }
   };
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="mb-8">

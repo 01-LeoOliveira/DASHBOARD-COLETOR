@@ -91,7 +91,7 @@ export default function AssociacaoEquipamento() {
   };
 
   const handleLoginClick = () => {
-    router.push('/');
+    router.push('/Login');
   };
 
   return (
