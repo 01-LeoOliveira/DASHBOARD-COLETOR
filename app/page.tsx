@@ -34,6 +34,7 @@ export default function Admin() {
     nome: '',
     numeroSerie: ''
   });
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     axios.get('/api/funcionarios').then(response => {
@@ -203,12 +204,12 @@ export default function Admin() {
                   <option value="separação">Separação</option>
                   <option value="segregados">Segregados</option>
                   <option value="expedição">Expedição</option>
+                  <option value="conferencia">Conferência</option>
                   <option value="armazenagem">Armazenagem</option>
                   <option value="reposição">Reposição</option>
                   <option value="devolução">Devolução</option>
                 </select>
               </div>
-
               <div>
                 <label className="block">Turno:</label>
                 <select
@@ -239,9 +240,21 @@ export default function Admin() {
             </form>
 
             <div className="mt-6">
-              <h3 className="text-lg font-semibold text-center">Lista de Funcionários</h3>
+              <h3 className="text-lg font-semibold text-center mb-4">Lista de Funcionários</h3>
+              <div className="mb-4">
+                <label className="block mb-2">Pesquisar Funcionários:</label>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full p-2 border rounded"
+                  placeholder="Digite o nome do funcionário"
+                />
+              </div>
               <ul>
-                {funcionarios.map((funcionario, index) => (
+                {funcionarios.filter((funcionario) =>
+                  funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())
+                ).map((funcionario, index) => (
                   <li key={index} className="border p-2 mt-2 rounded flex justify-between items-center">
                     <span>{funcionario.nome} - {funcionario.setor} - {funcionario.turno} - {funcionario.matricula}</span>
                     <div>
