@@ -35,6 +35,7 @@ export default function Admin() {
     numeroSerie: ''
   });
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchTermEquipamento, setSearchTermEquipamento] = useState("");
 
   useEffect(() => {
     axios.get('/api/funcionarios').then(response => {
@@ -176,6 +177,12 @@ export default function Admin() {
           >
             Cadastro de Equipamentos
           </button>
+          <button
+            onClick={() => router.push('/Historico')}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+          >
+            Histórico
+          </button>
         </div>
 
         {activeTab === 'funcionarios' && (
@@ -241,33 +248,23 @@ export default function Admin() {
 
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-center mb-4">Lista de Funcionários</h3>
-              <div className="mb-4">
-                <label className="block mb-2">Pesquisar Funcionários:</label>
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full p-2 border rounded"
-                  placeholder="Digite o nome do funcionário"
-                />
-              </div>
-              <ul>
-                {funcionarios.filter((funcionario) =>
-                  funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())
-                ).map((funcionario, index) => (
-                  <li key={index} className="border p-2 mt-2 rounded flex justify-between items-center">
-                    <span>{funcionario.nome} - {funcionario.setor} - {funcionario.turno} - {funcionario.matricula}</span>
+              <input
+                type="text"
+                placeholder="Pesquisar Funcionário..."
+                className="w-full p-2 border rounded mb-4"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+              <ul className="space-y-2">
+                {funcionarios.filter(funcionario => funcionario.nome.toLowerCase().includes(searchTerm.toLowerCase())).map((funcionario, index) => (
+                  <li key={index} className="flex justify-between items-center p-2 border rounded bg-gray-50">
                     <div>
-                      <button
-                        onClick={() => handleFuncionarioEdit(index)}
-                        className="ml-4 px-2 py-1 bg-yellow-500 text-white rounded"
-                      >
+                      {funcionario.nome} - {funcionario.setor} - {funcionario.turno} - {funcionario.matricula}
+                    </div>
+                    <div>
+                      <button onClick={() => handleFuncionarioEdit(index)} className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">
                         Editar
                       </button>
-                      <button
-                        onClick={() => handleFuncionarioDelete(index)}
-                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded"
-                      >
+                      <button onClick={() => handleFuncionarioDelete(index)} className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 ml-2">
                         Excluir
                       </button>
                     </div>
@@ -292,7 +289,6 @@ export default function Admin() {
                   required
                 />
               </div>
-
               <div>
                 <label className="block">Número de Série:</label>
                 <input
@@ -310,22 +306,24 @@ export default function Admin() {
             </form>
 
             <div className="mt-6">
-              <h3 className="text-lg font-semibold text-center">Lista de Equipamentos</h3>
-              <ul>
-                {equipamentos.map((equipamento, index) => (
-                  <li key={index} className="border p-2 mt-2 rounded flex justify-between items-center">
-                    <span>{equipamento.nome} - {equipamento.numeroSerie}</span>
+              <h3 className="text-lg font-semibold text-center mb-4">Lista de Equipamentos</h3>
+              <input
+                type="text"
+                placeholder="Pesquisar Equipamento..."
+                className="w-full p-2 border rounded mb-4"
+                onChange={(e) => setSearchTermEquipamento(e.target.value)}
+              />
+              <ul className="space-y-2">
+                {equipamentos.filter(equipamento => equipamento.nome.toLowerCase().includes(searchTermEquipamento.toLowerCase())).map((equipamento, index) => (
+                  <li key={index} className="flex justify-between items-center p-2 border rounded bg-gray-50">
                     <div>
-                      <button
-                        onClick={() => handleEquipamentoEdit(index)}
-                        className="ml-4 px-2 py-1 bg-yellow-500 text-white rounded"
-                      >
+                      {equipamento.nome} - {equipamento.numeroSerie}
+                    </div>
+                    <div>
+                      <button onClick={() => handleEquipamentoEdit(index)} className="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">
                         Editar
                       </button>
-                      <button
-                        onClick={() => handleEquipamentoDelete(index)}
-                        className="ml-2 px-2 py-1 bg-red-500 text-white rounded"
-                      >
+                      <button onClick={() => handleEquipamentoDelete(index)} className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 ml-2">
                         Excluir
                       </button>
                     </div>

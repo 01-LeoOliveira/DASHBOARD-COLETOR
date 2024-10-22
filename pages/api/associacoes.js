@@ -61,7 +61,17 @@ async function handlePost(req, res) {
         funcionario: true,
         equipamento: true,
       },
-    })
+    });
+
+    // Registra a ação no histórico
+    await prisma.historico.create({
+      data: {
+        funcionarioMatricula,
+        equipamentoNumeroSerie,
+        acao: 'Associado',  // Ação que você pode personalizar
+      },
+    });
+
     res.status(201).json(novaAssociacao)
   } catch (error) {
     res.status(400).json({ error: 'Erro ao criar associação' })
@@ -72,11 +82,31 @@ async function handlePost(req, res) {
 async function handleDelete(req, res) {
   const { matricula } = req.body
   try {
+    // Recupera as associações a serem removidas
+    const associacoesRemovidas = await prisma.associacao.findMany({
+      where: {
+        funcionarioMatricula: matricula,
+      },
+    });
+
+    // Remove as associações
     await prisma.associacao.deleteMany({
       where: {
         funcionarioMatricula: matricula,
       },
-    })
+    });
+
+    // Registra a ação no histórico
+    for (const associacao of associacoesRemovidas) {
+      await prisma.historico.create({
+        data: {
+          funcionarioMatricula: associacao.funcionarioMatricula,
+          equipamentoNumeroSerie: associacao.equipamentoNumeroSerie,
+          acao: 'Dissociado',  // Ação que você pode personalizar
+        },
+      });
+    }
+
     res.status(200).json({ message: 'Associações removidas com sucesso' })
   } catch (error) {
     res.status(400).json({ error: 'Erro ao remover associações' })

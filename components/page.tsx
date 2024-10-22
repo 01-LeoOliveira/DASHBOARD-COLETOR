@@ -38,25 +38,16 @@ const HistoricoPage = () => {
       try {
         setIsLoading(true);
         const response = await fetch('/api/historico');
-        
-        // Adicionando logs para debug
-        console.log('Status da resposta:', response.status);
-        
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error('Erro da API:', errorData);
-          throw new Error(errorData.error || 'Erro ao buscar dados');
+          throw new Error('Erro ao buscar dados');
         }
-        
         const data = await response.json();
-        console.log('Dados recebidos:', data);
-        
         setHistorico(data);
         setFilteredHistorico(data);
+        setIsLoading(false);
       } catch (err) {
         console.error('Erro ao buscar histórico:', err);
         setError('Falha ao carregar o histórico. Por favor, tente novamente mais tarde.');
-      } finally {
         setIsLoading(false);
       }
     };
@@ -126,29 +117,6 @@ const HistoricoPage = () => {
     }
   };
 
-  const handleExportCsv = async () => {
-    const response = await fetch('/api/historico', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ action: 'export' }),
-    });
-
-    if (response.ok) {
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'historico.csv';
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-    } else {
-      console.error('Erro ao exportar CSV');
-    }
-  };
-
   if (isLoading) {
     return (
       <Card className="w-full max-w-4xl mx-auto">
@@ -177,12 +145,6 @@ const HistoricoPage = () => {
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Equipamentos</CardTitle>
-          <button
-            onClick={handleExportCsv}
-            className="mt-4 mb-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            Exportar como CSV
-          </button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
