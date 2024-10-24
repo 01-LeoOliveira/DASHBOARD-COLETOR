@@ -28,7 +28,8 @@
     "react-dom": "^18",
     "sequelize": "^6.37.4",
     "tailwind-merge": "^2.5.4",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/jsonwebtoken": "^9.0.7",

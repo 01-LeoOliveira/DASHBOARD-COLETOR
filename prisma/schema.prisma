@@ -8,7 +8,7 @@ datasource db {
 }
 
 model associacao {
-  id                     String      @id
+  id                     String      @id @default(uuid()) // Modificado para gerar UUID automaticamente
   funcionarioMatricula   String
   equipamentoNumeroSerie String
   dataAssociacao         DateTime    @default(now())

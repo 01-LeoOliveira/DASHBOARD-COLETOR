@@ -7,7 +7,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search } from 'lucide-react';
 
-// Tipo exato que sua API retorna
 type Historico = {
   id: number;
   funcionario: {
@@ -28,7 +27,6 @@ const HistoricoPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
-  // Estados para filtros
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('todos');
   const [periodoFilter, setPeriodoFilter] = useState('todos');
@@ -39,18 +37,12 @@ const HistoricoPage = () => {
         setIsLoading(true);
         const response = await fetch('/api/historico');
         
-        // Adicionando logs para debug
-        console.log('Status da resposta:', response.status);
-        
         if (!response.ok) {
           const errorData = await response.json();
-          console.error('Erro da API:', errorData);
           throw new Error(errorData.error || 'Erro ao buscar dados');
         }
         
         const data = await response.json();
-        console.log('Dados recebidos:', data);
-        
         setHistorico(data);
         setFilteredHistorico(data);
       } catch (err) {
@@ -77,9 +69,15 @@ const HistoricoPage = () => {
       );
     }
 
-    // Filtro de status
+    // Filtro de status atualizado para corresponder aos valores da API
     if (statusFilter !== 'todos') {
-      filtered = filtered.filter(item => item.acao.toLowerCase() === statusFilter);
+      const statusMap = {
+        'retirada': 'Associado',
+        'devolucao': 'Dissociado'
+      };
+      filtered = filtered.filter(item => 
+        item.acao === statusMap[statusFilter as keyof typeof statusMap]
+      );
     }
 
     // Filtro de período
@@ -116,10 +114,10 @@ const HistoricoPage = () => {
   };
 
   const getStatusBadge = (acao: string) => {
-    switch(acao.toLowerCase()) {
-      case 'atribuicao':
+    switch(acao) {
+      case 'Associado':
         return <Badge variant="default" className="bg-blue-500">Retirada</Badge>;
-      case 'devolucao':
+      case 'Dissociado':
         return <Badge variant="default" className="bg-green-500">Devolução</Badge>;
       default:
         return <Badge variant="default" className="bg-gray-500">{acao}</Badge>;
@@ -186,7 +184,6 @@ const HistoricoPage = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {/* Filtros */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-gray-500" />
@@ -204,7 +201,7 @@ const HistoricoPage = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="atribuicao">Retiradas</SelectItem>
+                  <SelectItem value="retirada">Retiradas</SelectItem>
                   <SelectItem value="devolucao">Devoluções</SelectItem>
                 </SelectContent>
               </Select>
@@ -222,7 +219,6 @@ const HistoricoPage = () => {
               </Select>
             </div>
 
-            {/* Lista de Histórico */}
             {filteredHistorico.length > 0 ? (
               <div className="space-y-4">
                 {filteredHistorico.map((h) => (
